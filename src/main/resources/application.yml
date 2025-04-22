@@ -1,0 +1,35 @@
+spring:
+    security:
+        oauth2:
+            client:
+                registration:
+                    cognito:
+                        client-id: 3j8oa6dcbpdm0c51mm5pdrtra9
+                        client-secret: f45d5463upgid5i4hsv5d5vqc3td9nj1mnuitfeio5uojqe9mg2
+                        scope:
+                        - phone
+                        - openid
+                        - email
+                        # Spring Security by default uses a redirect-uri in the format: {baseUrl}/login/oauth2/code/{registrationId}
+                        # For example: http://localhost:8080/login/oauth2/code/cognito
+                        # See more: https://docs.spring.io/spring-security/reference/servlet/oauth2/login/core.html#oauth2login-sample-redirect-uri
+                        redirect-uri: http://localhost:8080/login/oauth2/code/cognito
+                provider:
+                    cognito:
+                        issuerUri: https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_2mxbsWi4F
+                        user-name-attribute: username
+    servlet:
+        multipart:
+            max-file-size: 20MB
+            max-request-size: 20MB
+
+aws:
+    region: eu-west-2
+    identityPoolId: eu-west-2:f2924214-28b1-48a1-adec-3e74b213a410
+    userPoolProvider: cognito-idp.eu-west-2.amazonaws.com/eu-west-2_2mxbsWi4F
+
+docusecure:
+        bucketName: docusecure-ranjan
+
+
+  

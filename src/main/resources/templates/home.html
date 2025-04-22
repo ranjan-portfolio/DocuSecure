@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DocuSecure - Secure File Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f5f7fa;
+        }
+
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 1rem 2rem;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        main {
+            padding: 2rem;
+            max-width: 800px;
+            margin: auto;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .upload-form {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #ccc;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f1f1f1;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .logout-btn {
+            float: right;
+            background-color: #dc3545;
+        }
+
+        .logout-btn:hover {
+            background-color: #a71d2a;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    DocuSecure
+    <button class="logout-btn" th:onclick="|location.href='@{/custom-logout}'|">Log out</button>
+</header>
+
+<main sec:authorize="isAuthenticated()">
+    <h2>Welcome, <span th:text="${#authentication.name}">User</span>!</h2>
+
+    <div class="upload-form">
+        <form method="post" th:action="@{/upload}" enctype="multipart/form-data">
+            <label for="file">Upload a file:</label><br><br>
+            <input type="file" name="file" id="file" required />
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+
+    <div>
+        <h3>Your Uploaded Files</h3>
+        <table th:if="${fileList != null and !fileList.isEmpty()}">
+            <thead>
+                <tr>
+                    <th>Filename</th>
+                    <th>Download</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="file : ${fileList}">
+                    <td th:text="${file.documentName}">filename.pdf</td>
+                    <td><a th:href="@{'/download/' + ${file.documentId}}" target="_blank">Download</a></td>
+                </tr>
+            </tbody>
+        </table>
+        <p th:if="${fileList == null or fileList.isEmpty()}">You have not uploaded any files yet.</p>
+    </div>
+</main>
+
+<div sec:authorize="isAnonymous()" style="text-align: center; margin-top: 2rem;">
+    <a th:href="@{/oauth2/authorization/cognito}">
+        <button>Log in with Cognito</button>
+    </a>
+</div>
+
+</body>
+</html>
