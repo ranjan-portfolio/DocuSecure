@@ -74,10 +74,11 @@ public class DocSecureController {
         }
 
         String idToken=oidcUser.getIdToken().getTokenValue();
-    
+        String username=oidcUser.getEmail();
         AwsSessionCredentials sessionCredentials=awsService.getTemporaryCredentials(idToken);
         String userId=SecurityContextHolder.getContext().getAuthentication().getName();
         List<DocumentDetails> fileList=awsService.listS3Objects(bucketName,userId, sessionCredentials);
+        model.addAttribute("username", username);
         model.addAttribute("fileList", fileList);
 
         return "home";
