@@ -1,218 +1,153 @@
-🔐 Building a Secure Document Store with AWS (S3, DynamoDB, Cognito) & Spring Boot — Part 2
+# 🔐 Creating a Document Store using S3, DynamoDB, Cognito, SpringBoot, Thymeleaf — Part 2
 
-In continuation of part 1 , this article details how to build a document store leveraging Cognito, S3, DynamoDB, SpringBoot and Thymeleaf. User can store and download their files in DocuSecure securely.
+In continuation of [Part 1](https://medium.com/...), this article details how to build a document store leveraging Cognito, S3, DynamoDB, SpringBoot and Thymeleaf. Users can securely store and download their files in **DocuSecure**.
 
-👋 Introduction
+## 👋 Introduction
 
-A detailed step-by-step of the document store is discussed in below medium blog
+This article extends Part 1 where we secured a Spring Boot application using Cognito. Here, we’ll:
+- Use a **Cognito Identity Pool** to provide temporary access to AWS services (S3, DynamoDB)
+- Store documents in **S3**
+- Store metadata in **DynamoDB**
+- Leverage Cognito for secure, key-less AWS access
 
-https://medium.com/@ranjanabhabhattacharya/building-a-secure-document-store-with-aws-s3-dynamodb-cognito-spring-boot-part-2-8581d61766a6
+## 🛠️ What We’ll Cover
+- Configuring Cognito Identity Pool
+- Creating IAM roles and permissions for S3/DynamoDB
+- Using SpringBoot + AWS SDK to list, upload and download documents
+- Explore Cognito’s built-in signup and password recovery
 
-Continuing from Part 1, where we secured a Spring Boot application using Amazon Cognito, this article demonstrates how to build a secure document store using AWS S3, DynamoDB, Spring Boot, and Thymeleaf. In this project, we leverage Cognito Identity Pools to provide temporary access to AWS resources without managing credentials manually.
+## 🧱 Tech Stack
+- Java 17
+- Spring Boot 3.x
+- Spring Security (OAuth2 Client)
+- Amazon Cognito (Hosted UI)
+- AWS SDK for Java v2
 
-🛠️ What We’ll Cover
-* How to configure a Cognito Identity Pool.
-* Setting up IAM roles and integrating them with Cognito for S3 and DynamoDB access.
-* Using Spring Boot and the AWS SDK to list, upload, and download files securely.
-* Exploring Cognito's built-in signup and password reset features.
+## ⚙️ Setting Up AWS Services
 
-🧱 Tech Stack
-* Java 17
-* Spring Boot 3.x
-* Spring Security (OAuth2 Client)
-* Amazon Cognito (Hosted UI)
-* AWS SDK for Java v2
+### 1. Create an S3 Bucket
+Use AWS Console to create a new bucket.
 
-⚙️ Setting Up Cognito Identity Pool,DynamoDb and S3 in Hosted AWS
+### 2. Create a DynamoDB Table
+Table name: `Docusecure`
+- Partition Key: `CustomerId`
+- Sort Key: `DocumentId`
+- Other fields: `fileName`, `fileType`, `filePath`
 
-1. Create an S3 bucket by navigating to the S3 service in AWS and clicking on "Create bucket."
+### 3–9. Create Cognito Identity Pool
+- Select **Authenticated Access** and **Amazon Cognito User Pool**
+- Attach IAM Role with permissions:
 
-   
-2. Head over to DynamoDB UI in AWS and create a table, We have used Partition Key as ‘CustomerId’ and ‘Sort Key’ as DocumentId. Other attributes that has been considered are FileName, FileType and FilePath
-
-￼
-3. Select ‘Authenticated access’ in User access and ‘Amazon Cognito user pool’ in ‘Authenticated identity source’ of Authentication section and press Next
-￼
-
-4. Create a new IAM role, Here since we have already created the role for application development so I have selected ‘Use an existing IAM role’
-￼
-
-5. Following IAM permissions needs to be added in the new IAM role
-￼
-
-IAM permissions
-
-
-1. ✅ First permission allows Cognito to retrieve temporary credentials {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "cognito-identity:GetCredentialsForIdentity"
-            ],
-            "Resource": [
-                "*"
-            ]
-        }
-    ]
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "cognito-identity:GetCredentialsForIdentity"
+      ],
+      "Resource": ["*"]
+    },
+    {
+      "Sid": "S3Access",
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::docusecure-ranjan",
+        "arn:aws:s3:::docusecure-ranjan/*"
+      ]
+    },
+    {
+      "Sid": "DynamoDBAccess",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:PutItem",
+        "dynamodb:GetItem",
+        "dynamodb:Query",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:Scan"
+      ],
+      "Resource": "arn:aws:dynamodb:eu-west-2:588578924488:table/Docusecure"
+    }
+  ]
 }
+```
 
-2. ✅ Second block grants specific access to S3 and DynamoDB resources.{
-	"Version": "2012-10-17",
-	"Statement": [
-		{
-			"Sid": "S3Access",
-			"Effect": "Allow",
-			"Action": [
-				"s3:PutObject",
-				"s3:GetObject",
-				"s3:DeleteObject",
-				"s3:ListBucket"
-			],
-			"Resource": [
-				"arn:aws:s3:::docusecure-ranjan",
-				"arn:aws:s3:::docusecure-ranjan/*"
-			]
-		},
-		{
-			"Sid": "DynamoDBAccess",
-			"Effect": "Allow",
-			"Action": [
-				"dynamodb:PutItem",
-				"dynamodb:GetItem",
-				"dynamodb:Query",
-				"dynamodb:UpdateItem",
-				"dynamodb:DeleteItem",
-				"dynamodb:Scan"
-			],
-			"Resource": "arn:aws:dynamodb:eu-west-2:588578924488:table/Docusecure"
-		}
-	]
-}
+## 🧩 Spring Boot Configuration
 
-6. In Trust relationship, please ensure if Cognito-identity.amazonaws.com:aud is your identity pool id
+### 10. Add Dependencies
 
-7. Select your User pool and App Client id that we have created in Part 1 of the tutorial and press Next
-￼
-8. Give identity pool name and press Next
-￼
-9. Review and click on ‘Create Identity pool’
-￼
-10. 🧩 Spring Boot Configuration
-
-Create a spring application. I have created a blank project using spring initialiser.
-Add following dependencies in pom.xml
-
-Pom.xml
-
+In `pom.xml`:
+```xml
 <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>aws-core</artifactId>
-            <version>2.31.25</version>
-        </dependency>
+  <groupId>software.amazon.awssdk</groupId>
+  <artifactId>aws-core</artifactId>
+  <version>2.31.25</version>
+</dependency>
+<!-- Add other dependencies for oauth2, s3, dynamodb, thymeleaf, etc. -->
+```
 
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-oauth2-client</artifactId>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
-            
-            <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/cognitoidentityprovider -->
-            <dependency>
-                <groupId>software.amazon.awssdk</groupId>
-                <artifactId>cognitoidentity</artifactId>
-                <version>2.31.25</version>
-            </dependency>
-            <dependency>
-                <groupId>software.amazon.awssdk</groupId>
-                <artifactId>s3</artifactId>
-                <version>2.31.25</version>
-            </dependency>
-            <dependency>
-                <groupId>software.amazon.awssdk</groupId>
-                <artifactId>dynamodb</artifactId>
-                <version>2.31.25</version>
-            </dependency>
-            <dependency>
-                <groupId>software.amazon.awssdk</groupId>
-                <artifactId>auth</artifactId>
-                <version>2.31.25</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-security</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-web</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-thymeleaf</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.thymeleaf.extras</groupId>
-                <artifactId>thymeleaf-extras-springsecurity6</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-test</artifactId>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-devtools</artifactId>
-                <scope>runtime</scope>
-                <optional>true</optional>
-            </dependency>
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <optional>true</optional>
-            </dependency>
-    </dependencies>
-
-
-
-11. application.yml
+### 11. application.yml
+```yaml
 spring:
-    security:
-        oauth2:
-            client:
-                registration:
-                    cognito:
-                        client-id: 3j8oa6dcbpdm0c51mm5pdrtra9
-                        client-secret: f45d5463upgid5i4hsv5d5vqc3td9nj1mnuitfeio5uojqe9mg2
-                        scope:
-                        - phone
-                        - openid
-                        - email
-                        # Spring Security by default uses a redirect-uri in the format: {baseUrl}/login/oauth2/code/{registrationId}
-                        # For example: http://localhost:8080/login/oauth2/code/cognito
-                        # See more: https://docs.spring.io/spring-security/reference/servlet/oauth2/login/core.html#oauth2login-sample-redirect-uri
-                        redirect-uri: http://localhost:8080/login/oauth2/code/cognito
-                provider:
-                    cognito:
-                        issuerUri: https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_2mxbsWi4F
-                        user-name-attribute: username
-    servlet:
-        multipart:
-            max-file-size: 20MB
-            max-request-size: 20MB
+  security:
+    oauth2:
+      client:
+        registration:
+          cognito:
+            client-id: YOUR_CLIENT_ID
+            client-secret: YOUR_CLIENT_SECRET
+            redirect-uri: http://localhost:8080/login/oauth2/code/cognito
+            scope: [phone, openid, email]
+        provider:
+          cognito:
+            issuerUri: https://cognito-idp.eu-west-2.amazonaws.com/YOUR_USER_POOL_ID
+            user-name-attribute: username
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
 
 aws:
-    region: eu-west-2
-    identityPoolId: eu-west-2:f2924214-28b1-48a1-adec-3e74b213a410
-    userPoolProvider: cognito-idp.eu-west-2.amazonaws.com/eu-west-2_2mxbsWi4F
+  region: eu-west-2
+  identityPoolId: YOUR_IDENTITY_POOL_ID
+  userPoolProvider: cognito-idp.eu-west-2.amazonaws.com/YOUR_USER_POOL_ID
 
 docusecure:
-        bucketName: docusecure-ranjan
+  bucketName: docusecure-ranjan
+```
 
+### 12. Get Temporary AWS Credentials from Identity Pool
 
-  
+### 13. Fetch Document Metadata from DynamoDB
 
-￼
-✨ Final Thoughts
+### 14. Upload File to S3
 
-We’ve successfully built a secure document storage application using Cognito, S3, DynamoDB, and Spring Boot. In the next part, we'll integrate CI/CD tools like Jenkins, Maven, Docker, EKS, and ArgoCD. Part 4 will feature a revamped UI using React and a RESTful backend.
+### 15. Download File from S3
+
+Use `documentId` to fetch metadata from DynamoDB and download file content.
+
+## 🧪 End-to-End Test Flow
+
+1. Launch App → Login at `localhost:8080`
+2. Upload a file (PDF)
+3. Download a file
+4. Logout (`/custom-logout`)
+5. Try `Sign Up` and `Forget Password` features
+
+## ✨ Final Thoughts
+
+We created a secure document store using AWS Cognito, S3, DynamoDB, and Spring Boot.
+
+🔗 **[GitHub Repo](https://github.com/ranjan-portfolio/DocuSecure.git)**
+
+🚀 **Coming Up Next:**
+- **Part 3** → Jenkins + Maven + Docker + EKS + ArgoCD CI/CD setup
+- **Part 4** → React UI + RESTful backend rewrite
