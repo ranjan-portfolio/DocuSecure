@@ -13,19 +13,6 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>DocuSecure</name>
 	<description>Demo project for storing documents securely</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
@@ -41,56 +28,75 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-oauth2-client</artifactId>
 			</dependency>
-			<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
-			
-			<!-- https://mvnrepository.com/artifact/software.amazon.awssdk/cognitoidentityprovider -->
+
+			 <dependency>
+        		<groupId>org.springframework.boot</groupId>
+        		<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+    		</dependency>
+
+			<dependency>
+				<groupId>org.springdoc</groupId>
+				<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+				<version>2.8.4</version>
+    	    </dependency>
+
 			<dependency>
 				<groupId>software.amazon.awssdk</groupId>
 				<artifactId>cognitoidentity</artifactId>
 				<version>2.31.25</version>
 			</dependency>
+
 			<dependency>
 				<groupId>software.amazon.awssdk</groupId>
 				<artifactId>s3</artifactId>
 				<version>2.31.25</version>
 			</dependency>
+
 			<dependency>
 				<groupId>software.amazon.awssdk</groupId>
 				<artifactId>dynamodb</artifactId>
 				<version>2.31.25</version>
 			</dependency>
+
 			<dependency>
 				<groupId>software.amazon.awssdk</groupId>
 				<artifactId>auth</artifactId>
 				<version>2.31.25</version>
 		    </dependency>
+
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-security</artifactId>
 			</dependency>
+
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-web</artifactId>
 			</dependency>
+
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-thymeleaf</artifactId>
 			</dependency>
+
 			<dependency>
 				<groupId>org.thymeleaf.extras</groupId>
 				<artifactId>thymeleaf-extras-springsecurity6</artifactId>
 			</dependency>
+
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-test</artifactId>
 				<scope>test</scope>
 		    </dependency>
+
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-devtools</artifactId>
 				<scope>runtime</scope>
 				<optional>true</optional>
 			</dependency>
+
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>

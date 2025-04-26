@@ -49,6 +49,8 @@ public class DocSecureController {
 
     @Value("${docusecure.bucketName}")
     private String bucketName;
+
+    private String controllerType="WEB";
     
     @GetMapping("/custom-logout")
     public void customLogout(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -75,7 +77,7 @@ public class DocSecureController {
 
         String idToken=oidcUser.getIdToken().getTokenValue();
         String username=oidcUser.getEmail();
-        AwsSessionCredentials sessionCredentials=awsService.getTemporaryCredentials(idToken);
+        AwsSessionCredentials sessionCredentials=awsService.getTemporaryCredentials(idToken,controllerType);
         String userId=SecurityContextHolder.getContext().getAuthentication().getName();
         List<DocumentDetails> fileList=awsService.listS3Objects(bucketName,userId, sessionCredentials);
         model.addAttribute("username", username);
@@ -96,7 +98,7 @@ public class DocSecureController {
 
         String idToken=oidcUser.getIdToken().getTokenValue();
     
-        AwsSessionCredentials sessionCredentials=awsService.getTemporaryCredentials(idToken);
+        AwsSessionCredentials sessionCredentials=awsService.getTemporaryCredentials(idToken,controllerType);
         String userId=SecurityContextHolder.getContext().getAuthentication().getName();
         DocumentResponseTO documentResponseTO=awsService.download(documentId, bucketName, userId, sessionCredentials);
 
@@ -118,7 +120,7 @@ public class DocSecureController {
         String idToken=oidcUser.getIdToken().getTokenValue();
         String userId=SecurityContextHolder.getContext().getAuthentication().getName();
     
-        AwsSessionCredentials sessionCredentials=awsService.getTemporaryCredentials(idToken);
+        AwsSessionCredentials sessionCredentials=awsService.getTemporaryCredentials(idToken,controllerType);
         
         awsService.upload(multipartFile, bucketName, userId, sessionCredentials);
 

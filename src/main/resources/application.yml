@@ -18,6 +18,9 @@ spring:
                     cognito:
                         issuerUri: https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_2mxbsWi4F
                         user-name-attribute: username
+            resourceserver:
+                    jwt:
+                        issuer-uri: https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_EGZ4NHv3x           
     servlet:
         multipart:
             max-file-size: 20MB
@@ -25,8 +28,17 @@ spring:
 
 aws:
     region: eu-west-2
-    identityPoolId: eu-west-2:f2924214-28b1-48a1-adec-3e74b213a410
-    userPoolProvider: cognito-idp.eu-west-2.amazonaws.com/eu-west-2_2mxbsWi4F
+    web:
+        identityPoolId: eu-west-2:f2924214-28b1-48a1-adec-3e74b213a410
+        userPoolProvider: cognito-idp.eu-west-2.amazonaws.com/eu-west-2_2mxbsWi4F
+    rest:
+        identityPoolId: eu-west-2:f2924214-28b1-48a1-adec-3e74b213a410
+        userPoolProvider: cognito-idp.eu-west-2.amazonaws.com/eu-west-2_EGZ4NHv3x
+
+    
+
+
+
 
 docusecure:
         bucketName: docusecure-ranjan

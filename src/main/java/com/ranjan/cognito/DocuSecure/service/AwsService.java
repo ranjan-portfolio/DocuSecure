@@ -1,8 +1,7 @@
 package com.ranjan.cognito.DocuSecure.service;
 
-import java.io.File;
+
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,31 +28,36 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.PutRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
-import software.amazon.awssdk.services.s3.model.S3Object;
 
 @Service
 public class AwsService {
 
-    @Value("${aws.identityPoolId}")
-    private String identityPoolId;
+    @Value("${aws.web.identityPoolId}")
+    private String webIdentityPoolId;
 
     @Value("${aws.region}")
     private String region;
 
-    @Value("${aws.userPoolProvider}")
-    private String provider;
+    @Value("${aws.web.userPoolProvider}")
+    private String webUserPoolProvider;
 
-    public AwsSessionCredentials getTemporaryCredentials(String idToken) {
+    @Value("${aws.rest.identityPoolId}")
+    private String restIdentityPoolId;
+
+    @Value("${aws.rest.userPoolProvider}")
+    private String restUserPoolProvider;
+
+    public AwsSessionCredentials getTemporaryCredentials(String idToken,String controller) {
+
+        String identityPoolId = controller.equals("WEB") ? webIdentityPoolId : restIdentityPoolId;
+        String provider = controller.equals("WEB") ? webUserPoolProvider : restUserPoolProvider;
+
         CognitoIdentityClient identityClient = CognitoIdentityClient.builder()
             .region(Region.of(region))
             .build();
@@ -106,6 +110,8 @@ public class AwsService {
     }
 
     public String upload(MultipartFile file,String bucketName,String userId, AwsSessionCredentials creds) throws IOException {
+        
+       
         S3Client s3 = S3Client.builder()
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(creds))
@@ -178,7 +184,7 @@ public class AwsService {
             GetObjectRequest objectRequest= GetObjectRequest.builder().bucket(bucketName).key(key).build();
             ResponseBytes<GetObjectResponse> content= s3.getObjectAsBytes(objectRequest);
             if(content==null){
-                //throw content not available
+                throw new RuntimeException("File not found");
             }
             documentResponseTO.setContent(content.asByteArray());
         }
