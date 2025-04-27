@@ -42,11 +42,12 @@ import lombok.Setter;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 
 
-@SecurityRequirement(name = "bearerAuth")
+
 @RestController
 @RequestMapping("/api")
 @Getter
 @Setter
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "DocuSecure", description = "API for secure Document Storage")
 public class DocRestController {
 

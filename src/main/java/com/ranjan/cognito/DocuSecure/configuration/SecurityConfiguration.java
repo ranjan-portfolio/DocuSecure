@@ -33,14 +33,17 @@ public class SecurityConfiguration {
             .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
             // Configure access rules
             .authorizeHttpRequests((c)->{
-                c.requestMatchers("/","/logged-out", "/error").permitAll();
+                c.requestMatchers("/",
+                                    "/logged-out", 
+                                    "/error",
+                                    "/swagger-ui/**",
+                                    "/v3/api-docs/**",
+                                    "/swagger-ui.html").permitAll();
                 c.requestMatchers(
                                             "/upload",
                                             "/download/**",
                                             "/api/**",
-                                            "/custom-logout",
-                                            "/swagger-ui/**"
-                                            ,"/v3/api-docs/**"
+                                            "/custom-logout"
                                             ).authenticated();
             })
             .logout(c->c.disable());
