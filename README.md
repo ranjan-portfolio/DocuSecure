@@ -325,3 +325,8 @@ GET /api/download/{fileId} — Download a document by ID
 
 ✅ Swagger even generates handy buttons like "Try it Out" and "Execute" to simplify testing!
 
+---
+## For Part 4 check https://github.com/ranjan-portfolio/docusecure-react
+
+
+
