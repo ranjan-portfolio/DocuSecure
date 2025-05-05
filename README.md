@@ -149,5 +149,5 @@ We created a secure document store using AWS Cognito, S3, DynamoDB, and Spring B
 🔗 **[GitHub Repo](https://github.com/ranjan-portfolio/DocuSecure.git)**
 
 🚀 **Coming Up Next:**
-- **Part 3** → Jenkins + Maven + Docker + EKS + ArgoCD CI/CD setup
-- **Part 4** → React UI + RESTful backend rewrite
+- **Part 3** → REST implementation of endpoints with Swagger with JWT validation.
+- **Part 4** → Upgrading the frontend to REACT UI
